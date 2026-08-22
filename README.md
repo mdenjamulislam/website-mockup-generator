@@ -1,4 +1,4 @@
-# Website Mockup Makers
+# Website Mockup Generator
 
 A production-ready web application that takes any URL, renders it in a real Chromium browser via Playwright, and composites the screenshot into customizable, high-resolution device mockups (PNG or WebP) using Sharp.
 
