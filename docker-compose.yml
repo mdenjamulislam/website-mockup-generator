@@ -1,0 +1,18 @@
+version: "3.8"
+
+services:
+  mockup-maker:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    image: mockup-maker:latest
+    ports:
+      - "3000:3000"
+    environment:
+      - NODE_ENV=production
+      - PORT=3000
+      - ALLOWED_ORIGINS=http://localhost:3000
+      - MAX_SCREENSHOT_WIDTH=1920
+      - MAX_SCREENSHOT_HEIGHT=2160
+      - SCREENSHOT_TIMEOUT=15000
+    restart: unless-stopped
