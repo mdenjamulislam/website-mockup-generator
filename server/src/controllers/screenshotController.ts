@@ -3,7 +3,7 @@ import { z } from "zod";
 import { validateUrl } from "../utils/urlValidator.js";
 import { captureScreenshot } from "../services/browserService.js";
 import { screenshotSchema } from "../schemas/screenshotSchema.js";
-import { createGeneration, markGenerationSuccessful } from "../services/mockupGenerationService.js";
+import { createGenerationIfNotExists, markGenerationSuccessful } from "../services/mockupGenerationService.js";
 
 export async function createScreenshot(req: Request, res: Response): Promise<void> {
   try {
@@ -24,31 +24,28 @@ export async function createScreenshot(req: Request, res: Response): Promise<voi
       return;
     }
 
-    // Step 2: Track generation start
-    let generationId: string;
+    // Step 2: Track generation (silently skips if URL already exists)
+    let generationId: string | null = null;
     try {
-      generationId = await createGeneration(safeUrl);
+      const result = await createGenerationIfNotExists(safeUrl);
+      generationId = result.id;
     } catch (dbErr) {
+      // Database errors must never prevent mockup generation.
+      // Log for observability, but continue with screenshot capture.
       console.error("Database error (insert):", dbErr);
-      res.status(500).json({
-        success: false,
-        error: {
-          code: "DATABASE_ERROR",
-          message: "Failed to track mockup generation.",
-        },
-      });
-      return;
     }
 
-    // Step 3: Capture screenshot
+    // Step 3: Capture screenshot — always proceeds regardless of DB outcome
     const imageBuffer = await captureScreenshot(safeUrl, { width, height, fullPage });
 
-    // Step 4: Track generation success
-    try {
-      await markGenerationSuccessful(generationId);
-    } catch (dbErr) {
-      console.error("Database error (update):", dbErr);
-      // We don't hide the screenshot success from the user if DB update fails
+    // Step 4: Track generation success (only if we have a record ID)
+    if (generationId) {
+      try {
+        await markGenerationSuccessful(generationId);
+      } catch (dbErr) {
+        console.error("Database error (update):", dbErr);
+        // We don't hide the screenshot success from the user if DB update fails
+      }
     }
 
     // Send the raw image
