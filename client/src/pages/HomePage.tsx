@@ -49,30 +49,30 @@ export function HomePage() {
   const handleDownloadMockup = useCallback(async (format: "png" | "webp" = "png") => {
     if (preview.status !== "success") return;
     setPreview(prev => ({ ...prev, isDownloading: true }) as PreviewState);
-    
+
     try {
       // Get the blob from the object URL
       const response = await fetch(preview.imageUrl);
       const blob = await response.blob();
-      
+
       // Send to composite API
       const formData = new FormData();
       formData.append("screenshot", blob, "screenshot.png");
       formData.append("config", JSON.stringify(config));
       formData.append("format", format);
-      
+
       const compositeResponse = await fetch("/api/mockup/render", {
         method: "POST",
         body: formData,
       });
-      
+
       if (!compositeResponse.ok) {
         throw new Error(`HTTP ${compositeResponse.status}`);
       }
-      
+
       const finalBlob = await compositeResponse.blob();
       const finalUrl = URL.createObjectURL(finalBlob);
-      
+
       // Download it
       const a = document.createElement("a");
       a.href = finalUrl;
@@ -102,11 +102,13 @@ export function HomePage() {
       </section>
 
       {/* Controls */}
-      <div className="sidebar" style={{ maxWidth: "800px", margin: "0 auto", width: "100%" }}>
-        <UrlInput
-          onSubmit={handleGenerate}
-          isLoading={preview.status === "loading"}
-        />
+      <div className="sidebar" style={{ maxWidth: "1080px", margin: "0 auto", width: "100%" }}>
+        <div>
+          <UrlInput
+            onSubmit={handleGenerate}
+            isLoading={preview.status === "loading"}
+          />
+        </div>
 
         <MockupConfigPanel
           config={config}

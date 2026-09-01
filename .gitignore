@@ -21,3 +21,10 @@ Thumbs.db
 .idea/
 *.tsbuildinfo
 coverage/
+
+# Supabase
+.supabase/
+.temp_migrations/
+
+*.ini
+*desktop.ini

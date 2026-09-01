@@ -40,7 +40,7 @@ npm run lint
 
 ## 2. Environment Configuration
 
-You can configure the backend via environment variables.
+You can configure the backend via environment variables. Create a `.env` file in the `server/` directory based on `server/.env.example`.
 
 | Variable | Default | Description |
 |---|---|---|
@@ -50,8 +50,15 @@ You can configure the backend via environment variables.
 | `MAX_SCREENSHOT_WIDTH` | `1920` | Maximum allowed width for website capture. |
 | `MAX_SCREENSHOT_HEIGHT` | `2160` | Maximum allowed height for website capture. |
 | `SCREENSHOT_TIMEOUT` | `15000` | Playwright navigation timeout in milliseconds. |
+| `SUPABASE_URL` | None | Your Supabase project URL. |
+| `SUPABASE_SERVICE_ROLE_KEY` | None | Your Supabase service role key (Never expose to frontend!). |
 
 ---
+
+## 3. Database Setup (Supabase)
+
+This project tracks generated mockups using Supabase.
+
 
 ## 3. Docker Development
 
