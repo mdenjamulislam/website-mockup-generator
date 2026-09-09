@@ -1,24 +1,12 @@
 import { Request, Response } from "express";
-import { compositeMockup } from "../services/compositorService.js";
-import { compositeSchema } from "../schemas/compositeSchema.js";
-import { z } from "zod";
+import { renderMultiDeviceComposition } from "../services/multiDeviceCompositorService.js";
+import { multiCompositeSchema } from "../schemas/multiCompositeSchema.js";
 
-export async function createComposite(req: Request, res: Response): Promise<void> {
+export async function renderMultiComposite(req: Request, res: Response): Promise<void> {
   try {
-    if (!req.file) {
-      res.status(400).json({
-        success: false,
-        error: { code: "MISSING_IMAGE", message: "Screenshot image is required." },
-      });
-      return;
-    }
-
     let parsedData;
     try {
-      parsedData = compositeSchema.parse({
-        format: req.body.format,
-        config: JSON.parse(req.body.config),
-      });
+      parsedData = multiCompositeSchema.parse(req.body);
     } catch (err: any) {
       if (err && err.errors && Array.isArray(err.errors)) {
         res.status(400).json({
@@ -29,16 +17,14 @@ export async function createComposite(req: Request, res: Response): Promise<void
       }
       res.status(400).json({
         success: false,
-        error: { code: "INVALID_CONFIG", message: "Mockup config must be valid JSON." },
+        error: { code: "INVALID_CONFIG", message: "Mockup config must be valid." },
       });
       return;
     }
 
-    const { format, config } = parsedData;
+    const finalImageBuffer = await renderMultiDeviceComposition(parsedData);
 
-    const finalImageBuffer = await compositeMockup(req.file.buffer, config, format);
-
-    if (format === "webp") {
+    if (parsedData.format === "webp") {
       res.setHeader("Content-Type", "image/webp");
       res.setHeader("Content-Disposition", 'attachment; filename="website-mockup.webp"');
     } else {
@@ -48,7 +34,7 @@ export async function createComposite(req: Request, res: Response): Promise<void
     
     res.send(finalImageBuffer);
   } catch (err) {
-    console.error("Composite error:", err);
+    console.error("Multi-composite error:", err);
     res.status(500).json({
       success: false,
       error: {

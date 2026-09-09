@@ -2,6 +2,7 @@
   "name": "mockup-maker-server",
   "version": "1.0.0",
   "private": true,
+  "type": "module",
   "description": "Website Mockup Generator — Express backend",
   "main": "dist/server.js",
   "scripts": {

@@ -1,5 +1,8 @@
 import sharp from "sharp";
-import type { MockupConfig } from "../../shared/types/index";
+import { compositeSchema } from "../schemas/compositeSchema.js";
+import type { z } from "zod";
+
+type MockupConfig = z.infer<typeof compositeSchema>["config"];
 
 export async function compositeMockup(
   imageBuffer: Buffer,
