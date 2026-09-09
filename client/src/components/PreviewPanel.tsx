@@ -3,7 +3,7 @@ import { MockupCanvas } from "./mockup/MockupCanvas";
 
 export type PreviewState =
   | { status: "idle" }
-  | { status: "loading"; step: string; progress: number }
+  | { status: "loading"; step: string; progress: number; multiProgress?: Record<string, "pending" | "success" | "error"> }
   | { status: "success"; imageUrl: string; isDownloading?: boolean }
   | { status: "error"; message: string };
 
@@ -27,7 +27,7 @@ export function PreviewPanel({ state, config, onRegenerate }: PreviewPanelProps)
       <div className="card-body preview-section">
         {state.status === "idle" && <IdleState />}
         {state.status === "loading" && (
-          <LoadingState step={state.step} progress={state.progress} />
+          <LoadingState step={state.step} progress={state.progress} multiProgress={state.multiProgress} />
         )}
         {state.status === "success" && (
           <SuccessState imageUrl={state.imageUrl} config={config} />
@@ -55,17 +55,36 @@ function IdleState() {
 interface LoadingStateProps {
   step: string;
   progress: number;
+  multiProgress?: Record<string, "pending" | "success" | "error">;
 }
 
-function LoadingState({ step, progress }: LoadingStateProps) {
+function LoadingState({ step, progress, multiProgress }: LoadingStateProps) {
   return (
     <div className="preview-loading" role="status" aria-live="polite">
       <div className="preview-loading-spinner" aria-hidden="true" />
-      <div>
+      <div style={{ textAlign: "center" }}>
         <p className="preview-loading-text">Generating your mockup…</p>
-        <p className="preview-loading-step">{step}</p>
+        <p className="preview-loading-step" style={{ marginBottom: "1rem" }}>{step}</p>
+        
+        {multiProgress && (
+          <div style={{ display: "flex", flexDirection: "column", gap: "0.5rem", alignItems: "flex-start", width: "fit-content", margin: "0 auto", fontSize: "0.9rem", color: "var(--color-text-2)" }}>
+            {["desktop", "laptop", "tablet", "mobile"].map(device => {
+              const state = multiProgress[device] || "pending";
+              let icon = "●";
+              let color = "inherit";
+              if (state === "success") { icon = "✓"; color = "var(--color-success)"; }
+              if (state === "error") { icon = "✗"; color = "var(--color-danger)"; }
+              return (
+                <div key={device} style={{ display: "flex", gap: "0.5rem", alignItems: "center" }}>
+                  <span style={{ color, width: "1rem", textAlign: "center", fontWeight: "bold" }}>{icon}</span>
+                  <span style={{ textTransform: "capitalize" }}>{device}</span>
+                </div>
+              );
+            })}
+          </div>
+        )}
       </div>
-      <div className="progress-bar-container" aria-label={`Progress: ${progress}%`}>
+      <div className="progress-bar-container" aria-label={`Progress: ${progress}%`} style={{ marginTop: "1rem" }}>
         <div className="progress-bar-track">
           <div
             className="progress-bar-fill"

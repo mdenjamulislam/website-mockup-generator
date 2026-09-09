@@ -1,50 +1,104 @@
-import { useState, useCallback, useRef } from "react";
+import { useState, useCallback, useRef, useEffect } from "react";
 import { UrlInput } from "../components/UrlInput";
 import { MockupConfigPanel } from "../components/MockupConfigPanel";
 import { PreviewPanel, type PreviewState } from "../components/PreviewPanel";
-import { StepsIndicator } from "../components/StepsIndicator";
+import { MultiDeviceComposition } from "../components/mockup/MultiDeviceComposition";
 import { useMockupConfig } from "../hooks/useMockupConfig";
-import { generateMockup } from "../services/mockupService";
+import { useCompositionConfig } from "../hooks/useCompositionConfig";
+import { CompositionConfigPanel } from "../components/CompositionConfigPanel";
+import { generateMockup, generateMultiDeviceMockup, downloadMultiDeviceMockup } from "../services/mockupService";
+import type { MultiDeviceScreenshots } from "../types/index";
 
 export function HomePage() {
   const { config, updateConfig, resetConfig } = useMockupConfig();
-  const [preview, setPreview] = useState<PreviewState>({ status: "idle" });
+  const comp = useCompositionConfig();
+  const [preview, setPreview] = useState<PreviewState & { multiProgress?: Record<string, "pending" | "success" | "error"> }>({ status: "idle" });
+  const [multiScreenshots, setMultiScreenshots] = useState<MultiDeviceScreenshots | null>(null);
+  const [isDownloadingMulti, setIsDownloadingMulti] = useState(false);
   const lastUrlRef = useRef<string>("");
+
+  // Cleanup object URLs when component unmounts or before new generation
+  useEffect(() => {
+    return () => {
+      if (multiScreenshots) {
+        Object.values(multiScreenshots).forEach(result => {
+          if (result.success && result.imageUrl) {
+            URL.revokeObjectURL(result.imageUrl);
+          }
+        });
+      }
+    };
+  }, [multiScreenshots]);
 
   const handleGenerate = useCallback(
     async (url: string) => {
       lastUrlRef.current = url;
 
-      setPreview({ status: "loading", step: "Launching browser…", progress: 10 });
+      const initialProgress: Record<string, "pending"> = {
+        desktop: "pending",
+        laptop: "pending",
+        tablet: "pending",
+        mobile: "pending"
+      };
 
-      setPreview({ status: "loading", step: "Capturing website screenshot…", progress: 50 });
+      setPreview({ 
+        status: "loading", 
+        step: "Rendering website...", 
+        progress: 10,
+        multiProgress: initialProgress 
+      });
+      
+      // Clear previous multi-device renders
+      setMultiScreenshots(null);
 
       try {
-        const result = await generateMockup(url, config);
-        setPreview({ status: "success", imageUrl: result.imageUrl });
-      } catch (err) {
-        const message =
-          err instanceof Error ? err.message : "Unknown error occurred.";
-        setPreview({ status: "error", message });
+        const [singleResult, multiResult] = await Promise.all([
+          generateMockup(url, config),
+          generateMultiDeviceMockup(url, (deviceId, success) => {
+            setPreview(prev => {
+              if (prev.status !== "loading") return prev;
+              return {
+                ...prev,
+                multiProgress: {
+                  ...prev.multiProgress,
+                  [deviceId]: success ? "success" : "error"
+                }
+              };
+            });
+          })
+        ]);
+        
+        setPreview({ status: "loading", step: "Creating mockup...", progress: 90 });
+        
+        setMultiScreenshots(multiResult);
+        setPreview({ status: "success", imageUrl: singleResult.imageUrl });
+      } catch (err: any) {
+        setPreview({
+          status: "error",
+          message: err.message || "Failed to generate mockup.",
+        });
       }
     },
     [config]
   );
+
+  const handleDownloadMultiDeviceMockup = useCallback(async (format: "png" | "webp") => {
+    if (!multiScreenshots) return;
+    setIsDownloadingMulti(true);
+    try {
+      await downloadMultiDeviceMockup(multiScreenshots, comp.config, format);
+    } catch (err: any) {
+      alert("Failed to download mockup: " + (err.message || "Unknown error"));
+    } finally {
+      setIsDownloadingMulti(false);
+    }
+  }, [multiScreenshots, comp.config]);
 
   const handleRegenerate = useCallback(() => {
     if (lastUrlRef.current) {
       void handleGenerate(lastUrlRef.current);
     }
   }, [handleGenerate]);
-
-  const currentStatus =
-    preview.status === "idle"
-      ? "idle"
-      : preview.status === "loading"
-        ? "loading"
-        : preview.status === "success"
-          ? "success"
-          : "error";
 
   const handleDownloadMockup = useCallback(async (format: "png" | "webp" = "png") => {
     if (preview.status !== "success") return;
@@ -91,44 +145,64 @@ export function HomePage() {
 
   return (
     <main id="main-content" className="app-content app-workspace">
-      {/* Hero */}
-      <section className="hero" aria-label="Application introduction" style={{ padding: "var(--space-8) var(--space-5) var(--space-4)" }}>
-        <h1 className="hero-title" style={{ fontSize: "var(--text-4xl)" }}>
-          Website Mockup <span className="hero-title-gradient">Generator</span>
-        </h1>
-        <p className="hero-description" style={{ fontSize: "var(--text-base)", maxWidth: "600px" }}>
-          Enter a URL, capture a real screenshot, and generate a beautiful device mockup.
-        </p>
-      </section>
-
-      {/* Controls */}
-      <div className="sidebar" style={{ maxWidth: "1080px", margin: "0 auto", width: "100%" }}>
-        <div>
-          <UrlInput
-            onSubmit={handleGenerate}
-            isLoading={preview.status === "loading"}
-          />
-        </div>
-
-        <MockupConfigPanel
-          config={config}
-          onChange={updateConfig}
-          onReset={resetConfig}
-          onDownload={handleDownloadMockup}
-          isDownloading={preview.status === "success" && preview.isDownloading}
-          hasMockup={preview.status === "success"}
+      {/* URL Input at Top */}
+      <div style={{ maxWidth: "1000px", margin: "0 auto var(--space-6)", width: "100%" }}>
+        <UrlInput
+          onSubmit={handleGenerate}
+          isLoading={preview.status === "loading"}
         />
       </div>
 
-      {/* Main Preview Area */}
-      <div className="preview-area" style={{ maxWidth: "1000px", margin: "0 auto", width: "100%" }}>
-        <PreviewPanel
-          state={preview}
-          config={config}
-          onRegenerate={
-            preview.status !== "idle" ? handleRegenerate : undefined
-          }
-        />
+      <div style={{ 
+        display: "grid", 
+        gridTemplateColumns: "minmax(300px, 1fr) minmax(300px, 2fr)", 
+        gap: "var(--space-6)",
+        maxWidth: "1400px",
+        margin: "0 auto",
+        width: "100%",
+        alignItems: "start"
+      }}>
+        {/* Controls */}
+        <div className="sidebar" style={{ width: "100%" }}>
+          {!multiScreenshots && (
+            <MockupConfigPanel
+              config={config}
+              onChange={updateConfig}
+              onReset={resetConfig}
+              onDownload={handleDownloadMockup}
+              isDownloading={preview.status === "success" && preview.isDownloading}
+              hasMockup={preview.status === "success"}
+            />
+          )}
+
+          {multiScreenshots && (
+            <CompositionConfigPanel
+              config={comp.config}
+              updateDeviceLayer={comp.updateDeviceLayer}
+              updateCanvas={comp.updateCanvas}
+              applyPreset={comp.applyPreset}
+              onDownload={handleDownloadMultiDeviceMockup}
+              isDownloading={isDownloadingMulti}
+            />
+          )}
+        </div>
+
+        {/* Main Preview Area */}
+        <div className="preview-area" style={{ width: "100%", minWidth: 0 }}>
+          {(!multiScreenshots || preview.status === "loading" || preview.status === "error") && (
+            <PreviewPanel
+              state={preview}
+              config={config}
+              onRegenerate={
+                preview.status !== "idle" ? handleRegenerate : undefined
+              }
+            />
+          )}
+          
+          {multiScreenshots && preview.status === "success" && (
+            <MultiDeviceComposition screenshots={multiScreenshots} config={comp.config} />
+          )}
+        </div>
       </div>
     </main>
   );

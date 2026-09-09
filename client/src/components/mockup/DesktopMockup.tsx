@@ -1,98 +1,29 @@
-import type { MockupConfig } from "../../types/index";
-import { ReactNode } from "react";
+import "./deviceStyles.css";
 
 interface DesktopMockupProps {
-  config: MockupConfig;
-  children: ReactNode;
+  imageUrl?: string;
 }
 
-export function DesktopMockup({ config, children }: DesktopMockupProps) {
-  const isDark = config.theme === "dark";
-  const frameBg = isDark ? "#1a1a1a" : "#f8fafc";
-  const bezelColor = isDark ? "#000000" : "#e2e8f0";
-
-  const borderRadiusStyle = config.rounded ? { borderRadius: "16px" } : {};
-  const shadowStyle = config.shadow
-    ? { boxShadow: "0 25px 50px -12px rgba(0, 0, 0, 0.5)" }
-    : {};
-
+export function DesktopMockup({ imageUrl }: DesktopMockupProps) {
   return (
-    <div
-      style={{
-        display: "flex",
-        flexDirection: "column",
-        alignItems: "center",
-        width: "100%",
-        height: "100%",
-      }}
-    >
-      {/* Monitor Frame */}
-      <div
-        style={{
-          ...borderRadiusStyle,
-          ...shadowStyle,
-          backgroundColor: bezelColor,
-          padding: "16px 16px 24px 16px",
-          width: "100%",
-          flex: 1,
-          display: "flex",
-          flexDirection: "column",
-        }}
-      >
-        {/* Inner Screen */}
-        <div
-          style={{
-            flex: 1,
-            backgroundColor: frameBg,
-            overflow: "hidden",
-            position: "relative",
-            borderRadius: config.rounded ? "4px" : "0",
-            border: `2px solid ${isDark ? "#262626" : "#cbd5e1"}`,
-          }}
-        >
-          {children}
+    <div className="dev-frame dev-desktop">
+      {/* Screen housing */}
+      <div className="dev-desktop-display dev-bezel-gloss">
+        <div className="dev-desktop-camera" aria-hidden="true" />
+        <div className="dev-screen dev-desktop-screen">
+          {imageUrl ? (
+            <img src={imageUrl} alt="Desktop Preview" />
+          ) : (
+            <div className="dev-screen-empty" />
+          )}
         </div>
-
-        {/* Brand Logo area (just a small dot for minimalist look) */}
-        <div
-          style={{
-            height: "8px",
-            display: "flex",
-            justifyContent: "center",
-            marginTop: "12px",
-          }}
-        >
-          <div
-            style={{
-              width: "4px",
-              height: "4px",
-              borderRadius: "50%",
-              backgroundColor: isDark ? "#333" : "#cbd5e1",
-            }}
-          />
+        <div className="dev-desktop-chin">
+          <div className="dev-desktop-logo" aria-hidden="true" />
         </div>
       </div>
-
-      {/* Stand (CSS only, simplified) */}
-      <div
-        style={{
-          width: "20%",
-          height: "40px",
-          backgroundColor: isDark ? "#262626" : "#cbd5e1",
-          borderBottomLeftRadius: "8px",
-          borderBottomRightRadius: "8px",
-          position: "relative",
-          zIndex: -1,
-        }}
-      />
-      <div
-        style={{
-          width: "30%",
-          height: "8px",
-          backgroundColor: isDark ? "#333" : "#94a3b8",
-          borderRadius: "4px",
-        }}
-      />
+      {/* Stand */}
+      <div className="dev-desktop-neck" aria-hidden="true" />
+      <div className="dev-desktop-base" aria-hidden="true" />
     </div>
   );
 }

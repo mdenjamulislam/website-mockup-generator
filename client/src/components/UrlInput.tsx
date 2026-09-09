@@ -102,6 +102,12 @@ export function UrlInput({ onSubmit, isLoading }: UrlInputProps) {
             </button>
           </div>
 
+          <p className="url-hint" style={{ paddingTop: "8px" }}>
+            {isLoading
+              ? "Launching headless browser... This usually takes 5-10 seconds."
+              : "Note: Generating regenerates the website screenshots. Layout changes to the composition do not require regeneration."}
+          </p>
+
           {hasError && (
             <p id="url-error" className="url-error" role="alert">
               <span aria-hidden="true">⚠️</span> {error}

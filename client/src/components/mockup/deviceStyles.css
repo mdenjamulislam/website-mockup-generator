@@ -1,0 +1,403 @@
+/* ============================================================
+   Device Frame Styles — Premium Edition
+   All frames use a 2D representation with:
+   - Realistic bezels and proportions
+   - Subtle highlight strips (glass reflections)
+   - Clean dark aluminum aesthetic
+   - Proper screen insets
+   ============================================================ */
+
+/* ── Base ─────────────────────────────────────────────────── */
+.dev-frame {
+  position: relative;
+  box-sizing: border-box;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.dev-screen {
+  background-color: #0a0a0f;
+  overflow: hidden;
+  position: relative;
+  flex-shrink: 0;
+}
+
+.dev-screen img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: top center;
+  display: block;
+}
+
+/* Screen placeholder when no image */
+.dev-screen-empty {
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(160deg, #1a1f2e 0%, #0d1117 100%);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+/* Subtle top-edge gloss highlight on any bezel */
+.dev-bezel-gloss::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 10%;
+  right: 10%;
+  height: 1px;
+  background: linear-gradient(to right, transparent, rgba(255,255,255,0.18), transparent);
+  pointer-events: none;
+}
+
+/* ── 1. Desktop Monitor ───────────────────────────────────── */
+.dev-desktop {
+  width: 1440px;
+}
+
+/* Outer display housing */
+.dev-desktop-display {
+  width: 100%;
+  background: linear-gradient(175deg, #2a2a2a 0%, #1a1a1a 100%);
+  border-radius: 20px 20px 8px 8px;
+  /* Top bezel slightly thicker = 20px; sides = 16px; bottom = 20px */
+  padding: 18px 16px 20px;
+  border: 1px solid rgba(255,255,255,0.08);
+  box-shadow:
+    inset 0 1px 0 rgba(255,255,255,0.1),
+    inset 0 -1px 0 rgba(0,0,0,0.4);
+  position: relative;
+}
+
+/* Front camera (webcam dot, top-center) */
+.dev-desktop-camera {
+  position: absolute;
+  top: 8px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: radial-gradient(circle at 30% 30%, #333, #111);
+  border: 1px solid rgba(255,255,255,0.06);
+}
+.dev-desktop-camera::after {
+  content: '';
+  position: absolute;
+  width: 3px;
+  height: 3px;
+  border-radius: 50%;
+  background: rgba(255,255,255,0.18);
+  top: 1px;
+  left: 1px;
+}
+
+/* Screen area */
+.dev-desktop-screen {
+  width: 100%;
+  height: 900px;
+  border-radius: 4px;
+  overflow: hidden;
+}
+
+/* Bottom logo bar */
+.dev-desktop-chin {
+  width: 100%;
+  height: 20px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding-top: 4px;
+}
+.dev-desktop-logo {
+  width: 14px;
+  height: 14px;
+  opacity: 0.25;
+  /* Apple-ish circle */
+  background: radial-gradient(circle, #fff, #aaa);
+  border-radius: 50%;
+}
+
+/* Neck stand */
+.dev-desktop-neck {
+  width: 140px;
+  height: 80px;
+  /* Tapered: wider at bottom */
+  background: linear-gradient(to bottom, #2e2e2e, #3a3a3a);
+  clip-path: polygon(20% 0%, 80% 0%, 100% 100%, 0% 100%);
+  margin-top: 0;
+  position: relative;
+  z-index: -1;
+}
+
+/* Base plate */
+.dev-desktop-base {
+  width: 380px;
+  height: 14px;
+  background: linear-gradient(to bottom, #3a3a3a, #2a2a2a);
+  border-radius: 8px 8px 0 0;
+  border-bottom: 2px solid #1a1a1a;
+  margin-top: -1px;
+}
+
+/* ── 2. Laptop ────────────────────────────────────────────── */
+.dev-laptop {
+  width: 1200px;
+}
+
+/* Lid (screen housing) */
+.dev-laptop-lid {
+  width: 100%;
+  background: linear-gradient(175deg, #2c2c2c 0%, #1c1c1c 100%);
+  border-radius: 16px 16px 0 0;
+  /* thin bezels: 14px top + sides, 8px bottom – camera notch eats top */
+  padding: 14px 14px 0;
+  border: 1px solid rgba(255,255,255,0.07);
+  border-bottom: none;
+  box-shadow: inset 0 1px 0 rgba(255,255,255,0.09);
+  position: relative;
+}
+
+/* Camera notch at very top of lid */
+.dev-laptop-camera {
+  position: absolute;
+  top: 6px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: radial-gradient(circle at 30% 30%, #2a2a2a, #0d0d0d);
+  border: 1px solid rgba(255,255,255,0.05);
+}
+
+/* Screen */
+.dev-laptop-screen {
+  width: 100%;
+  height: 750px;
+  border-radius: 3px 3px 0 0;
+  overflow: hidden;
+}
+
+/* Thin hinge bar between lid and keyboard */
+.dev-laptop-hinge {
+  width: 100%;
+  height: 5px;
+  background: linear-gradient(to bottom, #111, #222);
+  margin-bottom: 0;
+}
+
+/* Keyboard deck / palm rest */
+.dev-laptop-deck {
+  width: 1240px;         /* slightly wider to show depth */
+  margin-left: -20px;
+  background: linear-gradient(175deg, #282828 0%, #1e1e1e 100%);
+  border-radius: 0 0 16px 16px;
+  border: 1px solid rgba(255,255,255,0.06);
+  border-top: none;
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+/* Keyboard grid texture suggestion */
+.dev-laptop-keyboard {
+  width: 90%;
+  height: 42px;
+  margin: 10px auto 0;
+  background:
+    repeating-linear-gradient(
+      to right,
+      transparent,
+      transparent 28px,
+      rgba(255,255,255,0.04) 28px,
+      rgba(255,255,255,0.04) 30px
+    ),
+    repeating-linear-gradient(
+      to bottom,
+      transparent,
+      transparent 16px,
+      rgba(255,255,255,0.04) 16px,
+      rgba(255,255,255,0.04) 18px
+    );
+  border-radius: 4px;
+  background-color: #1a1a1a;
+}
+
+/* Touchpad */
+.dev-laptop-trackpad {
+  width: 260px;
+  height: 30px;
+  margin: 8px auto;
+  background: rgba(255,255,255,0.04);
+  border: 1px solid rgba(255,255,255,0.06);
+  border-radius: 6px;
+}
+
+/* Bottom foot strip */
+.dev-laptop-foot {
+  width: 100%;
+  height: 10px;
+  background: linear-gradient(to bottom, #1a1a1a, #141414);
+  border-radius: 0 0 16px 16px;
+}
+
+/* ── 3. Tablet ────────────────────────────────────────────── */
+.dev-tablet {
+  width: 600px;
+  background: linear-gradient(175deg, #282828 0%, #1c1c1c 100%);
+  border-radius: 40px;
+  padding: 28px 22px;
+  border: 1px solid rgba(255,255,255,0.08);
+  box-shadow:
+    inset 0 1px 0 rgba(255,255,255,0.08),
+    inset 0 -1px 0 rgba(0,0,0,0.3);
+  position: relative;
+}
+
+/* Camera/sensor cluster on top bezel */
+.dev-tablet-camera-wrap {
+  position: absolute;
+  top: 13px;
+  left: 50%;
+  transform: translateX(-50%);
+  display: flex;
+  align-items: center;
+  gap: 5px;
+}
+.dev-tablet-camera {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: radial-gradient(circle at 30% 30%, #2a2a2a, #080808);
+  border: 1px solid rgba(255,255,255,0.06);
+}
+.dev-tablet-mic {
+  width: 4px;
+  height: 4px;
+  border-radius: 50%;
+  background: #0a0a0a;
+  border: 1px solid rgba(255,255,255,0.05);
+}
+
+/* Home indicator at bottom */
+.dev-tablet-home {
+  position: absolute;
+  bottom: 10px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 100px;
+  height: 4px;
+  border-radius: 2px;
+  background: rgba(255,255,255,0.15);
+}
+
+/* Screen */
+.dev-tablet-screen {
+  width: 100%;
+  height: 800px;
+  border-radius: 14px;
+  overflow: hidden;
+}
+
+/* Side button */
+.dev-tablet-button {
+  position: absolute;
+  right: -2px;
+  top: 120px;
+  width: 4px;
+  height: 40px;
+  background: linear-gradient(to right, #333, #222);
+  border-radius: 0 3px 3px 0;
+}
+
+/* ── 4. Mobile Phone ──────────────────────────────────────── */
+.dev-mobile {
+  width: 340px;
+  background: linear-gradient(175deg, #2c2c2c 0%, #1c1c1c 100%);
+  border-radius: 50px;
+  padding: 14px 12px;
+  border: 1px solid rgba(255,255,255,0.09);
+  box-shadow:
+    inset 0 1px 0 rgba(255,255,255,0.1),
+    inset 0 -1px 0 rgba(0,0,0,0.35),
+    inset 2px 0 0 rgba(255,255,255,0.04),
+    inset -2px 0 0 rgba(255,255,255,0.04);
+  position: relative;
+}
+
+/* Dynamic island */
+.dev-dynamic-island {
+  position: absolute;
+  top: 16px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 110px;
+  height: 30px;
+  background: #000;
+  border-radius: 16px;
+  z-index: 2;
+  box-shadow: 0 0 0 1px rgba(255,255,255,0.04);
+}
+
+/* Volume buttons (left) */
+.dev-mobile-vol-up {
+  position: absolute;
+  left: -3px;
+  top: 100px;
+  width: 4px;
+  height: 34px;
+  background: linear-gradient(to left, #2a2a2a, #1a1a1a);
+  border-radius: 3px 0 0 3px;
+}
+.dev-mobile-vol-down {
+  position: absolute;
+  left: -3px;
+  top: 148px;
+  width: 4px;
+  height: 34px;
+  background: linear-gradient(to left, #2a2a2a, #1a1a1a);
+  border-radius: 3px 0 0 3px;
+}
+
+/* Power button (right) */
+.dev-mobile-power {
+  position: absolute;
+  right: -3px;
+  top: 120px;
+  width: 4px;
+  height: 50px;
+  background: linear-gradient(to right, #2a2a2a, #1a1a1a);
+  border-radius: 0 3px 3px 0;
+}
+
+/* Home indicator pill */
+.dev-mobile-home-indicator {
+  position: absolute;
+  bottom: 8px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 100px;
+  height: 4px;
+  border-radius: 2px;
+  background: rgba(255,255,255,0.18);
+}
+
+/* Screen */
+.dev-mobile-screen {
+  width: 100%;
+  height: 720px;
+  border-radius: 38px;
+  overflow: hidden;
+}
+
+/* ── Composition Canvas ───────────────────────────────────── */
+.composition-canvas {
+  position: relative;
+  overflow: hidden;
+  /* width + height + background are set dynamically via inline styles */
+}
