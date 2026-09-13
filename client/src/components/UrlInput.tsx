@@ -90,19 +90,19 @@ export function UrlInput({ onSubmit, isLoading }: UrlInputProps) {
             >
               {isLoading ? (
                 <>
-                  <span className="btn-icon">⏳</span>
+                  <span className="btn-icon"><div className="spinner" /></span>
                   Generating…
                 </>
               ) : (
                 <>
-                  <span className="btn-icon">✨</span>
+                  <span className="btn-icon"></span>
                   Generate Mockup
                 </>
               )}
             </button>
           </div>
 
-          <p className="url-hint" style={{ paddingTop: "8px" }}>
+          <p className="url-hint" style={{ paddingTop: "8px", fontStyle: "italic", fontSize: "12px" }}>
             {isLoading
               ? "Launching headless browser... This usually takes 5-10 seconds."
               : "Note: Generating regenerates the website screenshots. Layout changes to the composition do not require regeneration."}

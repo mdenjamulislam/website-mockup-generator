@@ -9,7 +9,7 @@ export function Header() {
         <div className="header-logo-icon" aria-hidden="true">🖥️</div>
         <div className="header-logo-text">
           <span className="header-logo-title">Mockup Maker</span>
-          <span className="header-logo-subtitle">Website Screenshot Generator</span>
+          <span className="header-logo-subtitle">Website Mockup Generator</span>
         </div>
       </a>
 
