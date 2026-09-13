@@ -1,33 +1,25 @@
-import "./deviceStyles.css";
+import { PhoneMockup as LibPhoneMockup } from "@codinix/device-mockup";
 
 interface MobileMockupProps {
   imageUrl?: string;
 }
 
+/**
+ * Mobile phone device frame powered by @codinix/device-mockup.
+ * Intrinsic screen area: 320×640px (set by the library).
+ */
 export function MobileMockup({ imageUrl }: MobileMockupProps) {
   return (
-    <div className="dev-frame dev-mobile dev-bezel-gloss">
-      {/* Dynamic Island */}
-      <div className="dev-dynamic-island" aria-hidden="true" />
-
-      {/* Volume buttons */}
-      <div className="dev-mobile-vol-up" aria-hidden="true" />
-      <div className="dev-mobile-vol-down" aria-hidden="true" />
-
-      {/* Power button */}
-      <div className="dev-mobile-power" aria-hidden="true" />
-
-      {/* Screen */}
-      <div className="dev-screen dev-mobile-screen">
-        {imageUrl ? (
-          <img src={imageUrl} alt="Mobile Preview" />
-        ) : (
-          <div className="dev-screen-empty" />
-        )}
-      </div>
-
-      {/* Home indicator */}
-      <div className="dev-mobile-home-indicator" aria-hidden="true" />
-    </div>
+    <LibPhoneMockup>
+      {imageUrl ? (
+        <img
+          src={imageUrl}
+          alt="Mobile preview"
+          style={{ width: "100%", height: "100%", objectFit: "cover", objectPosition: "top center", display: "block" }}
+        />
+      ) : (
+        <div style={{ width: "100%", height: "100%", background: "linear-gradient(160deg, #1a1f2e 0%, #0d1117 100%)" }} />
+      )}
+    </LibPhoneMockup>
   );
 }

@@ -1,29 +1,25 @@
-import "./deviceStyles.css";
+import { DesktopMockup as LibDesktopMockup } from "@codinix/device-mockup";
 
 interface DesktopMockupProps {
   imageUrl?: string;
 }
 
+/**
+ * Desktop device frame powered by @codinix/device-mockup.
+ * Intrinsic screen area: 890×500px (set by the library).
+ */
 export function DesktopMockup({ imageUrl }: DesktopMockupProps) {
   return (
-    <div className="dev-frame dev-desktop">
-      {/* Screen housing */}
-      <div className="dev-desktop-display dev-bezel-gloss">
-        <div className="dev-desktop-camera" aria-hidden="true" />
-        <div className="dev-screen dev-desktop-screen">
-          {imageUrl ? (
-            <img src={imageUrl} alt="Desktop Preview" />
-          ) : (
-            <div className="dev-screen-empty" />
-          )}
-        </div>
-        <div className="dev-desktop-chin">
-          <div className="dev-desktop-logo" aria-hidden="true" />
-        </div>
-      </div>
-      {/* Stand */}
-      <div className="dev-desktop-neck" aria-hidden="true" />
-      <div className="dev-desktop-base" aria-hidden="true" />
-    </div>
+    <LibDesktopMockup>
+      {imageUrl ? (
+        <img
+          src={imageUrl}
+          alt="Desktop preview"
+          style={{ width: "100%", height: "100%", objectFit: "cover", objectPosition: "top center", display: "block" }}
+        />
+      ) : (
+        <div style={{ width: "100%", height: "100%", background: "linear-gradient(160deg, #1a1f2e 0%, #0d1117 100%)" }} />
+      )}
+    </LibDesktopMockup>
   );
 }

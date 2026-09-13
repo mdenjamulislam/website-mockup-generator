@@ -5,7 +5,6 @@ import { DesktopMockup } from "./DesktopMockup";
 import { LaptopMockup } from "./LaptopMockup";
 import { TabletMockup } from "./TabletMockup";
 import { MobileMockup } from "./MobileMockup";
-import "./deviceStyles.css";
 
 interface MultiDeviceCompositionProps {
   screenshots: MultiDeviceScreenshots;
@@ -21,27 +20,29 @@ export function MultiDeviceComposition({
 
   const { width: CANVAS_WIDTH, height: CANVAS_HEIGHT } = config.canvas;
 
-  // Auto-scale to fit container width perfectly using ResizeObserver
+  // Auto-scale to fit container width using ResizeObserver
   useEffect(() => {
     if (!containerRef.current) return;
-    
+
     const observer = new ResizeObserver((entries) => {
-      for (let entry of entries) {
+      for (const entry of entries) {
         const containerWidth = entry.contentRect.width;
-        // Calculate scale to fit width, max scale is 1
         const newScale = Math.min(containerWidth / CANVAS_WIDTH, 1);
         setScale(newScale);
       }
     });
 
     observer.observe(containerRef.current);
-    
     return () => observer.disconnect();
   }, [CANVAS_WIDTH]);
 
-  // Helper to construct inline styles for a device layer
+  // Build CSS transform for each device layer
   const getLayerStyle = (layer: DeviceLayerConfig): React.CSSProperties => {
     if (!layer.visible) return { display: "none" };
+
+    const shadowFilter = layer.shadow
+      ? `drop-shadow(0 ${Math.round(layer.shadowBlur * 0.4)}px ${layer.shadowBlur}px rgba(0,0,0,${layer.shadowOpacity}))`
+      : "none";
 
     return {
       position: "absolute",
@@ -50,34 +51,36 @@ export function MultiDeviceComposition({
       transform: `translate(-50%, -50%) scale(${layer.scale}) rotate(${layer.rotation}deg)`,
       transformOrigin: "center center",
       zIndex: layer.zIndex,
-      filter: layer.shadow 
-        ? `drop-shadow(0 ${layer.shadowBlur / 2}px ${layer.shadowBlur}px rgba(0,0,0,${layer.shadowOpacity}))`
-        : "none",
+      filter: shadowFilter,
     };
   };
 
+  const bgStyle: React.CSSProperties = config.canvas.transparent
+    ? {
+        backgroundColor: "transparent",
+        backgroundImage:
+          "linear-gradient(45deg, #ccc 25%, transparent 25%), linear-gradient(-45deg, #ccc 25%, transparent 25%), linear-gradient(45deg, transparent 75%, #ccc 75%), linear-gradient(-45deg, transparent 75%, #ccc 75%)",
+        backgroundSize: "24px 24px",
+        backgroundPosition: "0 0, 0 12px, 12px -12px, -12px 0px",
+      }
+    : { backgroundColor: config.canvas.backgroundColor };
+
   return (
-    <div style={{ padding: 'var(--space-4)', width: '100%', display: 'flex', justifyContent: 'center' }}>
+    <div style={{ padding: "24px 16px 32px", width: "100%" }}>
+      {/* Outer wrapper: scales the canvas to fit the available width */}
       <div
         ref={containerRef}
         style={{
           width: "100%",
           maxWidth: `${CANVAS_WIDTH}px`,
-          aspectRatio: `${CANVAS_WIDTH} / ${CANVAS_HEIGHT}`,
+          margin: "0 auto",
+          // Maintain correct aspect ratio as the canvas scales
+          height: `${Math.round(CANVAS_HEIGHT * scale)}px`,
           position: "relative",
-          borderRadius: "16px",
-          overflow: "hidden",
-          boxShadow: "0 24px 48px -12px rgba(0,0,0,0.5), 0 0 0 1px rgba(255,255,255,0.05)",
-          backgroundColor: config.canvas.transparent ? "#1a1a1a" : config.canvas.backgroundColor,
-          backgroundImage: config.canvas.transparent 
-            ? "linear-gradient(45deg, #111 25%, transparent 25%), linear-gradient(-45deg, #111 25%, transparent 25%), linear-gradient(45deg, transparent 75%, #111 75%), linear-gradient(-45deg, transparent 75%, #111 75%)"
-            : "none",
-          backgroundSize: "20px 20px",
-          backgroundPosition: "0 0, 0 10px, 10px -10px, -10px 0px"
         }}
       >
+        {/* The canvas at its native resolution, scaled down */}
         <div
-          className="composition-canvas"
           style={{
             width: `${CANVAS_WIDTH}px`,
             height: `${CANVAS_HEIGHT}px`,
@@ -86,9 +89,14 @@ export function MultiDeviceComposition({
             left: 0,
             transform: `scale(${scale})`,
             transformOrigin: "top left",
-            backgroundColor: "transparent", // handled by parent
+            borderRadius: "20px",
+            overflow: "hidden",
+            boxShadow:
+              "0 32px 64px -16px rgba(0,0,0,0.35), 0 0 0 1px rgba(0,0,0,0.06)",
+            ...bgStyle,
           }}
         >
+          {/* Device layers — back to front via z-index */}
           {config.devices.desktop.visible && (
             <div style={getLayerStyle(config.devices.desktop)}>
               <DesktopMockup imageUrl={screenshots.desktop?.imageUrl} />
@@ -109,6 +117,22 @@ export function MultiDeviceComposition({
               <MobileMockup imageUrl={screenshots.mobile?.imageUrl} />
             </div>
           )}
+
+          {/* Subtle grounding shadow at the bottom of the canvas */}
+          <div
+            aria-hidden="true"
+            style={{
+              position: "absolute",
+              bottom: 0,
+              left: "10%",
+              right: "10%",
+              height: "60px",
+              background:
+                "radial-gradient(ellipse at center, rgba(0,0,0,0.18) 0%, transparent 80%)",
+              pointerEvents: "none",
+              zIndex: 0,
+            }}
+          />
         </div>
       </div>
     </div>

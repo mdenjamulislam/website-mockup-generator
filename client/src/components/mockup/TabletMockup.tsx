@@ -1,32 +1,25 @@
-import "./deviceStyles.css";
+import { TabletMockup as LibTabletMockup } from "@codinix/device-mockup";
 
 interface TabletMockupProps {
   imageUrl?: string;
 }
 
+/**
+ * Tablet device frame powered by @codinix/device-mockup.
+ * Intrinsic screen area: 480×640px (set by the library).
+ */
 export function TabletMockup({ imageUrl }: TabletMockupProps) {
   return (
-    <div className="dev-frame dev-tablet dev-bezel-gloss">
-      {/* Camera + mic cluster */}
-      <div className="dev-tablet-camera-wrap" aria-hidden="true">
-        <div className="dev-tablet-camera" />
-        <div className="dev-tablet-mic" />
-      </div>
-
-      {/* Side button */}
-      <div className="dev-tablet-button" aria-hidden="true" />
-
-      {/* Screen */}
-      <div className="dev-screen dev-tablet-screen">
-        {imageUrl ? (
-          <img src={imageUrl} alt="Tablet Preview" />
-        ) : (
-          <div className="dev-screen-empty" />
-        )}
-      </div>
-
-      {/* Home indicator */}
-      <div className="dev-tablet-home" aria-hidden="true" />
-    </div>
+    <LibTabletMockup>
+      {imageUrl ? (
+        <img
+          src={imageUrl}
+          alt="Tablet preview"
+          style={{ width: "100%", height: "100%", objectFit: "cover", objectPosition: "top center", display: "block" }}
+        />
+      ) : (
+        <div style={{ width: "100%", height: "100%", background: "linear-gradient(160deg, #1a1f2e 0%, #0d1117 100%)" }} />
+      )}
+    </LibTabletMockup>
   );
 }

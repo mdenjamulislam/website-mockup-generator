@@ -10,6 +10,7 @@
     "lint": "eslint src --ext .ts,.tsx"
   },
   "dependencies": {
+    "@codinix/device-mockup": "^1.0.7",
     "react": "^18.3.1",
     "react-dom": "^18.3.1"
   },

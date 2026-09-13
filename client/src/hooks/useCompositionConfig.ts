@@ -3,7 +3,7 @@ import { CompositionConfig, DeviceLayerConfig, CanvasConfig, PresetId, PRESETS }
 import type { DeviceId } from "../types/index";
 
 export function useCompositionConfig() {
-  const [config, setConfig] = useState<CompositionConfig>(PRESETS.all);
+  const [config, setConfig] = useState<CompositionConfig>(PRESETS["professional-showcase"]);
 
   const updateDeviceLayer = useCallback(
     (deviceId: DeviceId, partial: Partial<DeviceLayerConfig>) => {
@@ -36,7 +36,7 @@ export function useCompositionConfig() {
   }, []);
 
   const resetConfig = useCallback(() => {
-    setConfig(PRESETS.all);
+    setConfig(PRESETS["professional-showcase"]);
   }, []);
 
   return {

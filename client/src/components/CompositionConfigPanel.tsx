@@ -18,12 +18,11 @@ interface CompositionConfigPanelProps {
 }
 
 const PRESET_OPTIONS: { id: PresetId; label: string; icon: string }[] = [
-  { id: "all", label: "All Devices", icon: "📱💻" },
-  { id: "desktop-laptop", label: "Desktop + Laptop", icon: "🖥️💻" },
-  { id: "desktop-tablet-mobile", label: "Desktop + Tablet + Mobile", icon: "🖥️📱" },
-  { id: "laptop-mobile", label: "Laptop + Mobile", icon: "💻📱" },
-  { id: "mobile-tablet", label: "Mobile + Tablet", icon: "📱🤳" },
+  { id: "professional-showcase", label: "Professional Showcase", icon: "✨" },
   { id: "desktop-focus", label: "Desktop Focus", icon: "🖥️" },
+  { id: "balanced-devices", label: "Balanced Devices", icon: "📱💻" },
+  { id: "laptop-focus", label: "Laptop Focus", icon: "💻" },
+  { id: "mobile-focus", label: "Mobile + Tablet", icon: "📱" },
 ];
 
 const BG_COLORS = [
@@ -59,8 +58,8 @@ export function CompositionConfigPanel({
         <button
           type="button"
           className="btn btn-secondary btn-sm"
-          onClick={() => applyPreset("all")}
-          aria-label="Reset composition to All Devices preset"
+          onClick={() => applyPreset("professional-showcase")}
+          aria-label="Reset composition to Professional Showcase preset"
         >
           Reset Layout
         </button>
