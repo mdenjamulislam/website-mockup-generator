@@ -289,7 +289,7 @@ async function applyTransforms(
   };
 }
 
-// ── Main compositor ───────────────────────────────────────────────────────────
+// ── Main compositor ──────────────────────────────────────────────────
 
 export async function renderMultiDeviceComposition(request: MultiCompositeRequest): Promise<Buffer> {
   const { configuration, screenshots, format } = request;
@@ -325,14 +325,50 @@ export async function renderMultiDeviceComposition(request: MultiCompositeReques
 
   const bg = transparent ? { r: 0, g: 0, b: 0, alpha: 0 } : backgroundColor;
 
+  // ── Clip each layer to canvas bounds ─────────────────────────────────────────────
+  // Sharp throws when any composite input lies fully or partially outside the
+  // base canvas dimensions. This became a real risk with the new larger default
+  // scales (desktop 1.20x, laptop 0.75x, etc.) where scaled device frames can
+  // extend beyond the 1920x1080 canvas edges. We crop each layer to the
+  // visible intersection with the canvas before compositing.
+  const clippedLayers: Array<{ input: Buffer; left: number; top: number }> = [];
+
+  for (const layer of layers) {
+    const meta = await sharp(layer.buffer).metadata();
+    const lw = meta.width!;
+    const lh = meta.height!;
+
+    // Intersection of the layer rect with the canvas rect [0,width) x [0,height)
+    const srcLeft = Math.max(0, -layer.left);              // px to crop from left of layer buffer
+    const srcTop  = Math.max(0, -layer.top);               // px to crop from top of layer buffer
+    const dstLeft = Math.max(0, layer.left);               // final left on canvas
+    const dstTop  = Math.max(0, layer.top);                // final top on canvas
+
+    const visW = Math.min(lw - srcLeft, width  - dstLeft); // visible width
+    const visH = Math.min(lh - srcTop,  height - dstTop);  // visible height
+
+    if (visW <= 0 || visH <= 0) continue; // fully outside canvas — skip
+
+    let input: Buffer;
+    if (srcLeft === 0 && srcTop === 0 && visW === lw && visH === lh) {
+      // Layer is entirely within canvas — no crop needed
+      input = layer.buffer;
+    } else {
+      input = await sharp(layer.buffer)
+        .extract({ left: srcLeft, top: srcTop, width: visW, height: visH })
+        .png()
+        .toBuffer();
+    }
+
+    clippedLayers.push({ input, left: dstLeft, top: dstTop });
+  }
+
   let instance = sharp({
     create: { width, height, channels: 4, background: bg },
   });
 
-  if (layers.length > 0) {
-    instance = instance.composite(
-      layers.map((l) => ({ input: l.buffer, left: l.left, top: l.top }))
-    );
+  if (clippedLayers.length > 0) {
+    instance = instance.composite(clippedLayers);
   }
 
   return format === "webp"

@@ -9,7 +9,12 @@ import type { DevicePreset } from "../config/devicePresets.js";
 
 let sharedBrowser: Browser | null = null;
 
-async function getSharedBrowser(): Promise<Browser> {
+/**
+ * Returns the shared singleton Chromium browser, launching it on first call.
+ * Exported so that exportRenderService can reuse this browser instead of
+ * spinning up a second Chromium process for export rendering.
+ */
+export async function getSharedBrowser(): Promise<Browser> {
   if (sharedBrowser && sharedBrowser.isConnected()) {
     return sharedBrowser;
   }
