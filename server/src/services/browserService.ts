@@ -1,41 +1,62 @@
-import { chromium, Browser } from "playwright";
+import type { Browser } from "playwright-core";
 import { validateUrl } from "../utils/urlValidator.js";
 import { config } from "../config/index.js";
 import type { DevicePreset } from "../config/devicePresets.js";
 
 // ── Shared browser singleton ──────────────────────────────────────────────────
-// One browser process is reused across all requests. Each render gets its own
-// isolated BrowserContext (separate cookies, storage, etc.).
+// One browser process is reused across requests where possible. Each render gets
+// its own isolated BrowserContext (separate cookies, storage, cache, etc.).
 
 let sharedBrowser: Browser | null = null;
 
 /**
  * Returns the shared singleton Chromium browser, launching it on first call.
- * Exported so that exportRenderService can reuse this browser instead of
- * spinning up a second Chromium process for export rendering.
+ * Uses local Playwright Chromium for local development (Windows/macOS/Linux)
+ * and @sparticuz/chromium + playwright-core for Vercel production serverless.
  */
 export async function getSharedBrowser(): Promise<Browser> {
   if (sharedBrowser && sharedBrowser.isConnected()) {
     return sharedBrowser;
   }
 
-  sharedBrowser = await chromium.launch({
-    headless: true,
-    args: [
-      "--no-sandbox",
-      "--disable-setuid-sandbox",
-      "--disable-dev-shm-usage",
-      "--disable-gpu",
-      "--no-zygote",
-      "--disable-accelerated-2d-canvas",
-      "--disable-extensions",
-      "--mute-audio",
-      "--allow-running-insecure-content=false",
-      "--disable-background-timer-throttling",
-      "--disable-backgrounding-occluded-windows",
-      "--disable-renderer-backgrounding",
-    ],
-  });
+  const isServerless = Boolean(
+    process.env.VERCEL || process.env.AWS_LAMBDA_FUNCTION_NAME
+  );
+
+  if (isServerless) {
+    const chromium = (await import("@sparticuz/chromium")).default;
+    const { chromium: playwrightChromium } = await import("playwright-core");
+
+    chromium.setGraphicsMode = false;
+    const executablePath =
+      process.env.CHROMIUM_EXECUTABLE_PATH || (await chromium.executablePath());
+
+    sharedBrowser = await playwrightChromium.launch({
+      args: chromium.args,
+      executablePath,
+      headless: chromium.headless === "shell" ? true : Boolean(chromium.headless),
+    });
+  } else {
+    const { chromium } = await import("playwright");
+
+    sharedBrowser = await chromium.launch({
+      headless: true,
+      args: [
+        "--no-sandbox",
+        "--disable-setuid-sandbox",
+        "--disable-dev-shm-usage",
+        "--disable-gpu",
+        "--no-zygote",
+        "--disable-accelerated-2d-canvas",
+        "--disable-extensions",
+        "--mute-audio",
+        "--allow-running-insecure-content=false",
+        "--disable-background-timer-throttling",
+        "--disable-backgrounding-occluded-windows",
+        "--disable-renderer-backgrounding",
+      ],
+    });
+  }
 
   sharedBrowser.on("disconnected", () => {
     console.warn("⚠️ Shared browser disconnected — will restart on next request.");

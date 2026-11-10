@@ -1,6 +1,20 @@
 import type { ApiResponse } from "../types/index";
 
-const BASE_URL = "/api";
+const rawBase = (import.meta.env.VITE_API_BASE_URL || "").trim().replace(/\/+$/, "");
+const sanitizedBase = rawBase.endsWith("/api") ? rawBase.slice(0, -4) : rawBase;
+
+export const API_ORIGIN = sanitizedBase;
+export const API_BASE_URL = sanitizedBase ? `${sanitizedBase}/api` : "/api";
+
+export function getApiEndpoint(path: string): string {
+  const cleanPath = path.startsWith("/") ? path : `/${path}`;
+  if (cleanPath.startsWith("/api/")) {
+    return `${sanitizedBase}${cleanPath}`;
+  }
+  return `${API_BASE_URL}${cleanPath}`;
+}
+
+const BASE_URL = API_BASE_URL;
 
 class ApiError extends Error {
   constructor(
@@ -16,7 +30,8 @@ async function request<T>(
   endpoint: string,
   options?: RequestInit
 ): Promise<ApiResponse<T>> {
-  const url = `${BASE_URL}${endpoint}`;
+  const cleanEndpoint = endpoint.startsWith("/") ? endpoint : `/${endpoint}`;
+  const url = `${BASE_URL}${cleanEndpoint}`;
 
   const response = await fetch(url, {
     headers: {

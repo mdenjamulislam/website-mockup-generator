@@ -7,6 +7,7 @@ import { useMockupConfig } from "../hooks/useMockupConfig";
 import { useCompositionConfig } from "../hooks/useCompositionConfig";
 import { CompositionConfigPanel } from "../components/CompositionConfigPanel";
 import { generateMockup, generateMultiDeviceMockup, downloadMultiDeviceMockup } from "../services/mockupService";
+import { getApiEndpoint } from "../services/api";
 import type { MultiDeviceScreenshots } from "../types/index";
 
 export function HomePage() {
@@ -115,7 +116,7 @@ export function HomePage() {
       formData.append("config", JSON.stringify(config));
       formData.append("format", format);
 
-      const compositeResponse = await fetch("/api/mockup/render", {
+      const compositeResponse = await fetch(getApiEndpoint("/api/mockup/render"), {
         method: "POST",
         body: formData,
       });

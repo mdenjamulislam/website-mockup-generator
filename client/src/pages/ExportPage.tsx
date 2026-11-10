@@ -54,7 +54,10 @@ export function ExportPage() {
       const b64 = b64Map[deviceId];
 
       if (b64 && configuration.devices[deviceId]?.visible) {
-        const src = `data:image/png;base64,${b64}`;
+        const src =
+          b64.startsWith("data:") || b64.startsWith("http://") || b64.startsWith("https://")
+            ? b64
+            : `data:image/png;base64,${b64}`;
         screenshots[deviceId] = { success: true, imageUrl: src };
 
         // Pre-load via HTMLImageElement so the browser has decoded the image

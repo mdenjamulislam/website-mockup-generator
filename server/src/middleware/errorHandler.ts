@@ -34,7 +34,8 @@ export function errorHandler(
     console.error(err.stack);
   }
 
-  const isProd = config.nodeEnv === "production";
+  const isProd =
+    config.nodeEnv === "production" || Boolean(process.env.VERCEL);
   
   res.status(statusCode).json({
     success: false,

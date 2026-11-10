@@ -120,36 +120,31 @@ export async function createMultiScreenshot(req: Request, res: Response): Promis
       console.error("Database error (insert):", dbErr);
     }
 
-    // Fan out — render each requested device in parallel using the shared browser
-    const renderResults = await Promise.allSettled(
-      devices.map(async (deviceId) => {
-        const preset = DEVICE_PRESETS[deviceId as DeviceId];
-        const buffer = await renderWebsite(safeUrl, preset);
-        return { deviceId, buffer };
-      })
-    );
-
-    // Assemble response object
+    // Render requested devices sequentially to minimise memory usage in serverless
     const screenshots: Record<string, DeviceResult> = {};
     let anySuccess = false;
 
-    for (const result of renderResults) {
-      if (result.status === "fulfilled") {
-        const { deviceId, buffer } = result.value;
+    for (const deviceId of devices) {
+      const preset = DEVICE_PRESETS[deviceId as DeviceId];
+      if (!preset) {
+        screenshots[deviceId] = {
+          success: false,
+          error: `Unknown device preset: ${deviceId}`,
+        };
+        continue;
+      }
+
+      try {
+        const buffer = await renderWebsite(safeUrl, preset);
         screenshots[deviceId] = {
           success: true,
           data: buffer.toString("base64"),
         };
         anySuccess = true;
-      } else {
-        // Find the device ID from the original devices array for this settled index
-        const idx = renderResults.indexOf(result);
-        const deviceId = devices[idx];
+      } catch (renderErr) {
         const errorMessage =
-          result.reason instanceof Error
-            ? result.reason.message
-            : "Unknown render error.";
-        console.error(`Device render failed [${deviceId}]:`, result.reason);
+          renderErr instanceof Error ? renderErr.message : "Unknown render error.";
+        console.error(`Device render failed [${deviceId}]:`, renderErr);
         screenshots[deviceId] = { success: false, error: errorMessage };
       }
     }

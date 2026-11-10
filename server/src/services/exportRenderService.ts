@@ -4,10 +4,15 @@ import { config } from "../config/index.js";
 import type { MultiCompositeRequest } from "../schemas/multiCompositeSchema.js";
 
 // ── Export page URL ───────────────────────────────────────────────────────────
-// Dev:  Vite dev server at localhost:5173  (or CLIENT_PORT override)
-// Prod: Express serves the built client at the same port as the API
+// Vercel: frontend is deployed separately as static project, reachable at FRONTEND_ORIGIN
+// Dev:    Vite dev server at localhost:5173 (or CLIENT_PORT override)
+// Prod (standalone): Express serves the built client locally
 function getExportUrl(): string {
-  if (config.nodeEnv === "production") {
+  if (process.env.VERCEL || (config.frontendOrigin && config.frontendOrigin !== "http://localhost:5173")) {
+    const origin = config.frontendOrigin.replace(/\/$/, "");
+    return `${origin}/export`;
+  }
+  if (config.nodeEnv === "production" && !process.env.VERCEL) {
     return `http://localhost:${config.port}/export`;
   }
   const clientPort = process.env.CLIENT_PORT ?? "5173";
@@ -74,7 +79,7 @@ export async function renderExportComposition(
     });
 
     // Navigate — wait only for DOM ready; images are loaded by ExportPage itself
-    await page.goto(exportUrl, { waitUntil: "domcontentloaded", timeout: 15000 });
+    await page.goto(exportUrl, { waitUntil: "domcontentloaded", timeout: 20000 });
 
     // Wait for ExportPage to finish loading all device images and signal readiness.
     // READY_PREDICATE is a JS string so tsc does not see "window" as unknown.

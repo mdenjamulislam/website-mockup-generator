@@ -1,6 +1,6 @@
 import type { MockupConfig, MultiDeviceScreenshots, MultiScreenshotApiResponse, DeviceId } from "../types/index";
 import type { CompositionConfig } from "../types/composition";
-import { api } from "./api";
+import { api, getApiEndpoint } from "./api";
 
 export interface GenerateMockupResult {
   imageUrl: string;
@@ -12,7 +12,7 @@ export async function generateMockup(
   url: string,
   config: MockupConfig
 ): Promise<GenerateMockupResult> {
-  const response = await fetch("/api/screenshot", {
+  const response = await fetch(getApiEndpoint("/api/screenshot"), {
     method: "POST",
     headers: {
       "Content-Type": "application/json",
@@ -67,7 +67,7 @@ export async function generateMultiDeviceMockup(
   // Run fetches concurrently
   const promises = deviceIds.map(async (deviceId) => {
     try {
-      const response = await fetch("/api/screenshot/multi", {
+      const response = await fetch(getApiEndpoint("/api/screenshot/multi"), {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
@@ -146,7 +146,7 @@ export async function downloadMultiDeviceMockup(
     }
   }
 
-  const response = await fetch("/api/mockup/render-multi", {
+  const response = await fetch(getApiEndpoint("/api/mockup/render-multi"), {
     method: "POST",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify({

@@ -1,4 +1,6 @@
-﻿import type { CompositionConfig } from "./types/composition";
+﻿/// <reference types="vite/client" />
+
+import type { CompositionConfig } from "./types/composition";
 
 /**
  * Payload injected by Playwright's addInitScript before the export page loads.
